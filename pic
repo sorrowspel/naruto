@@ -1,0 +1,71 @@
+#include <xc.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#pragma config FOSC = INTOSCIO  // Oscillator Selection bits (INTOSC oscillator: I/O function on RA6/OSC2/CLKOUT pin, I/O function on RA7/OSC1/CLKIN)
+#pragma config WDTE = OFF       // Watchdog Timer Enable bit (WDT disabled)
+#pragma config PWRTE = OFF      // Power-up Timer Enable bit (PWRT disabled)
+#pragma config MCLRE = OFF      // RA5/MCLR/VPP Pin Function Select bit (RA5/MCLR/VPP pin function is digital input, MCLR internally tied to VDD)
+#pragma config BOREN = ON       // Brown-out Detect Enable bit (BOD enabled)
+#pragma config LVP = OFF        // Low-Voltage Programming Enable bit (RB4/PGM pin has digital I/O function, HV on MCLR must be used for programming)
+#pragma config CPD = OFF        // Data EE Memory Code Protection bit (Data memory code protection off)
+#pragma config CP = OFF         // Flash Program Memory Code Protection bit (Code protection off)
+
+#define _XTAL_FREQ 4000000
+
+void timer_0()
+{
+    output_toggle(pin_b0);
+    set_timer0(32);
+}
+
+
+
+void main(void) {
+    
+    do{
+    
+    setup_timer_0(rtcc_internal|rtcc_div_32);//configuro el prescaler en 32, 
+                                             //para que cuente cada 32 pulsos de 
+                                             //255
+    set_timer0(32);
+    enable_interrupts(int_timer0);
+    enable_interrupts(global);
+   
+    OPTION_REGbits.T0CS=0;//clock interno
+    OPTION_REGbits.PSA=0;//prescaler TMR0
+    
+    TRISB = 0b1100011; //usando como salida los bits 5, 4 y 3
+    TRISA = 0xFF; //voy a dejar como entrada los pines del puerto A
+    
+    CMCON = 0b00000111
+    
+    char password=proyectopic33357;
+    char ingresado;
+    
+    OPTION_REGbits.T0CS=0;
+    OPTION_REGbits.PSA=0; 
+    
+    OPTION_REGbits.PS0=1;
+    OPTION_REGbits.PS1=1;
+    OPTION_REGbits.PS2=1;    
+    
+    TMR0=0
+    
+    if(INTCONbits.T0IF != 0)
+    {
+        __delay_ms(100);
+        printf("Ingrese la contraseña porfavor\n")
+        scanf("%s", &ingresado)
+        
+        if(pasword=ingresado)RB3=1;//si la contraseña es correcta se prende este led
+        else RB4=1;//si la contraseña es incorrecta se prende este led
+    }
+    else RB5=1;//si la cuenta termino y el usuario no ingreso la cuenta se pone
+               //el bit asociado a rb5 en 1 osea se prende dicho led
+        
+    }while(1);
+    
+    
+    return;
+}
